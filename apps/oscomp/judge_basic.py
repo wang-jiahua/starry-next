@@ -116,7 +116,7 @@ class test_close(TestBase):
         self.assert_ge(len(data), 1)
         self.assert_in_str(r"  close \d+ success.", data)
 
-class dup2_test(TestBase):
+class test_dup2(TestBase):
     def __init__(self):
         super().__init__("dup2", 2)
 
@@ -451,6 +451,36 @@ def get_runner(name):
 target_testcases = [
     "test_brk",
     "test_chdir",
+    # "test_clone",
+    "test_close",
+    "test_dup2",
+    "test_dup",
+    # "test_execve",
+    # "test_exit",
+    # "test_fork",
+    # "test_fstat",
+    "test_getcwd",
+    # "test_getdents",
+    "test_getpid",
+    "test_getppid",
+    "test_gettimeofday",
+    "test_mkdir",
+    "test_mmap",
+    # "test_mount",
+    "test_munmap",
+    # "test_openat",
+    # "test_open",
+    # "test_pipe",
+    # "test_read",
+    "test_sleep",
+    "test_times",
+    # "test_umount",
+    "test_uname",
+    "test_unlink",
+    # "test_wait",
+    # "test_waitpid",
+    "test_write"
+    # "test_yield"
 ]
 
 if __name__ == '__main__':
@@ -461,6 +491,7 @@ if __name__ == '__main__':
     data = []
     pat = re.compile(r"========== START (.+) ==========")
     for line in serial_out:
+        line = line.replace('\r', '').replace('\n', '')
         if line in ('', '\n'):
             continue
         if state == 0:
@@ -495,9 +526,9 @@ if __name__ == '__main__':
             # 测试样例中间
             data.append(line)
     test_results = [x.get_result() for x in runner.values()]
+    print(json.dumps(test_results))
     for x in runner.values():
         result = x.get_result()
         if result['all'] != result['pass'] and result['name'] in target_testcases:
             exit(255)
-    print("Busybox testcases passed.")
-    print(json.dumps(test_results))
+    print("Basic testcases passed.")
