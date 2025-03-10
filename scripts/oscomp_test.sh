@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TIMEOUT=1200s
+TIMEOUT=2400s
 EXIT_STATUS=0
 ROOT=$(realpath $(dirname $0))/../
 AX_ROOT=$ROOT/.arceos
@@ -39,15 +39,21 @@ basic_testlist=(
     "/$LIBC/basic/close"
     "/$LIBC/basic/dup2"
     "/$LIBC/basic/dup"
+    "/$LIBC/basic/execve"
+    "/$LIBC/basic/fstat"
     "/$LIBC/basic/getcwd"
     "/$LIBC/basic/getpid"
     "/$LIBC/basic/getppid"
     "/$LIBC/basic/gettimeofday"
     "/$LIBC/basic/mkdir_"
     "/$LIBC/basic/mmap"
+    "/$LIBC/basic/mount"
     "/$LIBC/basic/munmap"
+    "/$LIBC/basic/open"
+    "/$LIBC/basic/read"
     "/$LIBC/basic/sleep"
     "/$LIBC/basic/times"
+    "/$LIBC/basic/umount"
     "/$LIBC/basic/uname"
     "/$LIBC/basic/unlink"
     "/$LIBC/basic/write"
