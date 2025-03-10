@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TIMEOUT=60s
+TIMEOUT=1200s
 EXIT_STATUS=0
 ROOT=$(realpath $(dirname $0))/../
 AX_ROOT=$ROOT/.arceos
@@ -24,8 +24,9 @@ if [ "$ARCH" != "x86_64" ] && [ "$ARCH" != "riscv64" ] && [ "$ARCH" != "aarch64"
     exit $S_FAILED
 fi
 
-LIBC=musl
-
+if [ -z "$LIBC" ]; then
+    LIBC=musl
+fi
 if [ "$LIBC" != "musl" ] && [ "$LIBC" != "glibc" ]; then
     echo "Unknown libc: $LIBC"
     exit $S_FAILED
@@ -35,6 +36,21 @@ fi
 basic_testlist=(
     "/$LIBC/basic/brk"
     "/$LIBC/basic/chdir"
+    "/$LIBC/basic/close"
+    "/$LIBC/basic/dup2"
+    "/$LIBC/basic/dup"
+    "/$LIBC/basic/getcwd"
+    "/$LIBC/basic/getpid"
+    "/$LIBC/basic/getppid"
+    "/$LIBC/basic/gettimeofday"
+    "/$LIBC/basic/mkdir_"
+    "/$LIBC/basic/mmap"
+    "/$LIBC/basic/munmap"
+    "/$LIBC/basic/sleep"
+    "/$LIBC/basic/times"
+    "/$LIBC/basic/uname"
+    "/$LIBC/basic/unlink"
+    "/$LIBC/basic/write"
 )
 busybox_testlist=("/$LIBC/busybox sh /$LIBC/busybox_testcode.sh")
 iozone_testlist=("/$LIBC/busybox sh /$LIBC/iozone_testcode.sh")
