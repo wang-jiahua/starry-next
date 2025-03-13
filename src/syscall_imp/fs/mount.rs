@@ -1,17 +1,26 @@
-use core::ffi::{c_char, c_void};
 use alloc::vec::Vec;
-use arceos_posix_api::{char_ptr_to_str, handle_file_path, FilePath, AT_FDCWD};
+use arceos_posix_api::{AT_FDCWD, FilePath, char_ptr_to_str, handle_file_path};
 use axerrno::LinuxError;
 use axsync::Mutex;
+use core::ffi::{c_char, c_void};
 
 use crate::syscall_body;
 
-pub(crate) fn sys_mount(source: *const c_char, target: *const c_char, fs_type: *const c_char, _flags: i32, _data: *const c_void) -> isize {
+pub(crate) fn sys_mount(
+    source: *const c_char,
+    target: *const c_char,
+    fs_type: *const c_char,
+    _flags: i32,
+    _data: *const c_void,
+) -> isize {
     syscall_body!(sys_mount, {
         let device_path = handle_file_path(AT_FDCWD, Some(source as _), false)?;
         let mount_path = handle_file_path(AT_FDCWD, Some(target as _), true)?;
         let fs_type = char_ptr_to_str(fs_type)?;
-        info!("mount {:?} to {:?} with fs_type={:?}", device_path, mount_path, fs_type);
+        info!(
+            "mount {:?} to {:?} with fs_type={:?}",
+            device_path, mount_path, fs_type
+        );
         if fs_type != "vfat" {
             debug!("fs_type can only be vfat.");
             return Err(LinuxError::EPERM);
@@ -35,7 +44,7 @@ pub(crate) fn sys_mount(source: *const c_char, target: *const c_char, fs_type: *
     })
 }
 
-pub(crate) fn sys_umount2(target: *const c_char, flags: i32) -> isize{
+pub(crate) fn sys_umount2(target: *const c_char, flags: i32) -> isize {
     syscall_body!(sys_umount2, {
         let mount_path = handle_file_path(AT_FDCWD, Some(target as _), true)?;
         if flags != 0 {
@@ -94,7 +103,11 @@ pub fn mount_fat_fs(device_path: &FilePath, mount_path: &FilePath) -> bool {
     // // device_path需要链接转换, mount_path不需要, 因为目前目录没有链接  // 暂时只有Open过的文件会加入到链接表，所以这里先不转换
     if mount_path.exists() {
         MOUNTED.lock().push(MountedFs::new(device_path, mount_path));
-        info!("mounted {} to {}", device_path.as_str(), mount_path.as_str());
+        info!(
+            "mounted {} to {}",
+            device_path.as_str(),
+            mount_path.as_str()
+        );
         return true;
     }
     info!(
