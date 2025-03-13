@@ -451,10 +451,13 @@ def get_runner(name):
 target_testcases = [
     "test_brk",
     "test_chdir",
+    "test_clone",
     "test_close",
     "test_dup2",
     "test_dup",
     "test_execve",
+    "test_exit",
+    "test_fork",
     "test_fstat",
     "test_getcwd",
     "test_getpid",
@@ -465,13 +468,17 @@ target_testcases = [
     "test_mount",
     "test_munmap",
     "test_open",
+    "test_pipe",
     "test_read",
     "test_sleep",
     "test_times",
     "test_umount",
     "test_uname",
     "test_unlink",
-    "test_write"
+    "test_wait",
+    "test_waitpid",
+    "test_write",
+    "test_yield",
 ]
 
 if __name__ == '__main__':
@@ -482,7 +489,6 @@ if __name__ == '__main__':
     data = []
     pat = re.compile(r"========== START (.+) ==========")
     for line in serial_out:
-        line = line.replace('\r', '').replace('\n', '')
         if line in ('', '\n'):
             continue
         if state == 0:
@@ -515,7 +521,7 @@ if __name__ == '__main__':
                 # test_name = line.replace("=", '').replace(" ", "").replace("START", "")
                 continue
             # 测试样例中间
-            data.append(line)
+            data.append(line.replace('\n', '').replace('\r', ''))
     test_results = [x.get_result() for x in runner.values()]
     print(json.dumps(test_results))
     for x in runner.values():
