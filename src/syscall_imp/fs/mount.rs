@@ -1,68 +1,67 @@
 use alloc::vec::Vec;
 use arceos_posix_api::{AT_FDCWD, FilePath, char_ptr_to_str, handle_file_path};
-use axerrno::LinuxError;
+use axerrno::{LinuxError, LinuxResult};
 use axsync::Mutex;
 use core::ffi::{c_char, c_void};
+use macro_rules_attribute::apply;
 
-use crate::syscall_body;
+use crate::syscall_imp::syscall_instrument;
 
+#[apply(syscall_instrument)]
 pub(crate) fn sys_mount(
     source: *const c_char,
     target: *const c_char,
     fs_type: *const c_char,
     _flags: i32,
     _data: *const c_void,
-) -> isize {
-    syscall_body!(sys_mount, {
-        let device_path = handle_file_path(AT_FDCWD, Some(source as _), false)?;
-        let mount_path = handle_file_path(AT_FDCWD, Some(target as _), true)?;
-        let fs_type = char_ptr_to_str(fs_type)?;
-        info!(
-            "mount {:?} to {:?} with fs_type={:?}",
-            device_path, mount_path, fs_type
-        );
-        if fs_type != "vfat" {
-            debug!("fs_type can only be vfat.");
-            return Err(LinuxError::EPERM);
-        }
-        // 检查挂载点路径是否存在
-        if !mount_path.exists() {
-            debug!("mount path not exist");
-            return Err(LinuxError::EPERM);
-        }
-        // 查挂载点是否已经被挂载
-        if check_mounted(&mount_path) {
-            debug!("mount path includes mounted fs");
-            return Err(LinuxError::EPERM);
-        }
-        // 挂载
-        if !mount_fat_fs(&device_path, &mount_path) {
-            debug!("mount error");
-            return Err(LinuxError::EPERM);
-        }
-        Ok(0)
-    })
+) -> LinuxResult<isize> {
+    let device_path = handle_file_path(AT_FDCWD, Some(source as _), false)?;
+    let mount_path = handle_file_path(AT_FDCWD, Some(target as _), true)?;
+    let fs_type = char_ptr_to_str(fs_type)?;
+    info!(
+        "mount {:?} to {:?} with fs_type={:?}",
+        device_path, mount_path, fs_type
+    );
+    if fs_type != "vfat" {
+        debug!("fs_type can only be vfat.");
+        return Err(LinuxError::EPERM);
+    }
+    // 检查挂载点路径是否存在
+    if !mount_path.exists() {
+        debug!("mount path not exist");
+        return Err(LinuxError::EPERM);
+    }
+    // 查挂载点是否已经被挂载
+    if check_mounted(&mount_path) {
+        debug!("mount path includes mounted fs");
+        return Err(LinuxError::EPERM);
+    }
+    // 挂载
+    if !mount_fat_fs(&device_path, &mount_path) {
+        debug!("mount error");
+        return Err(LinuxError::EPERM);
+    }
+    Ok(0)
 }
 
-pub(crate) fn sys_umount2(target: *const c_char, flags: i32) -> isize {
-    syscall_body!(sys_umount2, {
-        let mount_path = handle_file_path(AT_FDCWD, Some(target as _), true)?;
-        if flags != 0 {
-            debug!("flags unimplemented");
-            return Err(LinuxError::EPERM);
-        }
-        // 检查挂载点路径是否存在
-        if !mount_path.exists() {
-            debug!("mount path not exist");
-            return Err(LinuxError::EPERM);
-        }
-        // 从挂载点中删除
-        if !umount_fat_fs(&mount_path) {
-            debug!("umount error");
-            return Err(LinuxError::EPERM);
-        }
-        Ok(0)
-    })
+#[apply(syscall_instrument)]
+pub(crate) fn sys_umount2(target: *const c_char, flags: i32) -> LinuxResult<isize> {
+    let mount_path = handle_file_path(AT_FDCWD, Some(target as _), true)?;
+    if flags != 0 {
+        debug!("flags unimplemented");
+        return Err(LinuxError::EPERM);
+    }
+    // 检查挂载点路径是否存在
+    if !mount_path.exists() {
+        debug!("mount path not exist");
+        return Err(LinuxError::EPERM);
+    }
+    // 从挂载点中删除
+    if !umount_fat_fs(&mount_path) {
+        debug!("umount error");
+        return Err(LinuxError::EPERM);
+    }
+    Ok(0)
 }
 
 /// 挂载的文件系统。
