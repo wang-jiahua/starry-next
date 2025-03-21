@@ -57,6 +57,7 @@ fn handle_syscall(tf: &TrapFrame, syscall_num: usize) -> isize {
     info!("Syscall {:?}", Sysno::from(syscall_num as u32));
     time_stat_from_user_to_kernel();
     let result: LinuxResult<isize> = match Sysno::from(syscall_num as u32) {
+        Sysno::lseek => sys_lseek(tf.arg0() as _, tf.arg1() as _, tf.arg2() as _),
         Sysno::read => sys_read(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
         Sysno::write => sys_write(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
         Sysno::mmap => sys_mmap(
@@ -72,6 +73,7 @@ fn handle_syscall(tf: &TrapFrame, syscall_num: usize) -> isize {
         Sysno::sched_yield => sys_sched_yield(),
         Sysno::nanosleep => sys_nanosleep(tf.arg0().into(), tf.arg1().into()),
         Sysno::getpid => sys_getpid(),
+        Sysno::gettid => sys_gettid(),
         Sysno::getppid => sys_getppid(),
         Sysno::exit => sys_exit(tf.arg0() as _),
         Sysno::gettimeofday => sys_get_time_of_day(tf.arg0().into()),
@@ -153,6 +155,15 @@ fn handle_syscall(tf: &TrapFrame, syscall_num: usize) -> isize {
             tf.arg1().into(),
             tf.arg2().into(),
             tf.arg3() as _,
+        ),
+        Sysno::rt_sigtimedwait => {
+            sys_rt_sigtimedwait(tf.arg0().into(), tf.arg1().into(), tf.arg2().into())
+        }
+        Sysno::prlimit64 => sys_prlimit64(
+            tf.arg0() as _,
+            tf.arg1() as _,
+            tf.arg2().into(),
+            tf.arg3().into(),
         ),
         _ => {
             warn!("Unimplemented syscall: {}", syscall_num);

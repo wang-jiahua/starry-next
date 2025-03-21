@@ -1,6 +1,8 @@
+use core::ffi::c_void;
+
 use axerrno::LinuxResult;
 
-use crate::ptr::{PtrWrapper, UserPtr};
+use crate::ptr::{PtrWrapper, UserConstPtr, UserPtr};
 
 pub fn sys_getuid() -> LinuxResult<isize> {
     Ok(0)
@@ -45,5 +47,15 @@ impl UtsName {
 
 pub fn sys_uname(name: UserPtr<UtsName>) -> LinuxResult<isize> {
     unsafe { *name.get()? = UtsName::default() };
+    Ok(0)
+}
+
+pub fn sys_prlimit64(
+    _pid: i32,
+    _resource: i32,
+    _new_limit: UserConstPtr<c_void>,
+    _old_limit: UserPtr<c_void>,
+) -> LinuxResult<isize> {
+    warn!("sys_prlimit64: not implemented");
     Ok(0)
 }

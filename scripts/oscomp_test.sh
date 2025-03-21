@@ -24,8 +24,9 @@ if [ "$ARCH" != "x86_64" ] && [ "$ARCH" != "riscv64" ] && [ "$ARCH" != "aarch64"
     exit $S_FAILED
 fi
 
-LIBC=musl
-
+if [ -z "$LIBC" ]; then
+    LIBC=musl
+fi
 if [ "$LIBC" != "musl" ] && [ "$LIBC" != "glibc" ]; then
     echo "Unknown libc: $LIBC"
     exit $S_FAILED
@@ -35,28 +36,42 @@ fi
 basic_testlist=(
     "/$LIBC/basic/brk"
     "/$LIBC/basic/chdir"
+    "/$LIBC/basic/clone"
+    "/$LIBC/basic/close"
+    "/$LIBC/basic/dup2"
+    "/$LIBC/basic/dup"
     "/$LIBC/basic/execve"
+    "/$LIBC/basic/exit"
+    "/$LIBC/basic/fork"
+    "/$LIBC/basic/fstat"
+    "/$LIBC/basic/getcwd"
+    "/$LIBC/basic/getdents"
+    "/$LIBC/basic/getpid"
+    "/$LIBC/basic/getppid"
+    "/$LIBC/basic/gettimeofday"
+    "/$LIBC/basic/mkdir_"
+    "/$LIBC/basic/mmap"
+    "/$LIBC/basic/munmap"
+    "/$LIBC/basic/openat"
+    "/$LIBC/basic/open"
     "/$LIBC/basic/pipe"
-    # "/$LIBC/basic/close"
-    # "/$LIBC/basic/dup"
-    # "/$LIBC/basic/dup2"
-    # "/$LIBC/basic/fstat"
-    # "/$LIBC/basic/getcwd"
-    # "/$LIBC/basic/mkdir_"
-    # "/$LIBC/basic/open"
-    # "/$LIBC/basic/read"
-    # "/$LIBC/basic/unlink"
-    # "/$LIBC/basic/write"
-    # "/$LIBC/basic/openat"
-    # "/$LIBC/basic/getdents"
-    # "/$LIBC/basic/mount"
-    # "/$LIBC/basic/umount"
+    "/$LIBC/basic/read"
+    "/$LIBC/basic/sleep"
+    "/$LIBC/basic/times"
+    "/$LIBC/basic/uname"
+    "/$LIBC/basic/unlink"
+    "/$LIBC/basic/wait"
+    "/$LIBC/basic/waitpid"
+    "/$LIBC/basic/write"
+    "/$LIBC/basic/yield"
 )
 busybox_testlist=("/$LIBC/busybox sh /$LIBC/busybox_testcode.sh")
 iozone_testlist=("/$LIBC/busybox sh /$LIBC/iozone_testcode.sh")
 lua_testlist=("/$LIBC/busybox sh /$LIBC/lua_testcode.sh")
-libctest_testlist=("/$LIBC/busybox sh /$LIBC/libctest_testcode.sh")
-
+libctest_testlist=(
+    "/$LIBC/runtest.exe -w /$LIBC/entry-static.exe fdopen"
+    "/$LIBC/runtest.exe -w /$LIBC/entry-static.exe lseek_large"
+)
 testcases_type=(
     "basic"
     "busybox"

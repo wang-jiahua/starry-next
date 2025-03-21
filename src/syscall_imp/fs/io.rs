@@ -5,6 +5,10 @@ use axerrno::LinuxResult;
 
 use crate::ptr::{PtrWrapper, UserConstPtr, UserPtr};
 
+pub(crate) fn sys_lseek(fd: i32, offset: isize, whence: i32) -> LinuxResult<isize> {
+    Ok(api::sys_lseek(fd, offset as _, whence) as _)
+}
+
 pub(crate) fn sys_read(fd: i32, buf: UserPtr<c_void>, count: usize) -> LinuxResult<isize> {
     let buf = buf.get_as_bytes(count)?;
     Ok(api::sys_read(fd, buf, count))

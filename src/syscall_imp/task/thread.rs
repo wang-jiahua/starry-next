@@ -208,3 +208,9 @@ pub fn sys_execve(
 
     unreachable!("execve should never return");
 }
+
+#[apply(syscall_instrument)]
+pub fn sys_gettid() -> LinuxResult<isize> {
+    warn!("sys_gettid: not implemented");
+    Ok(0)
+}
